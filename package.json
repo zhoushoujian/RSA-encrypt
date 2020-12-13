@@ -1,0 +1,11 @@
+{
+    "name": "RSA-encrypt",
+    "version": "1.0.0",
+    "main": "main.bat",
+    "scripts": {
+        "encrypt": "node encrypt.js",
+        "decrypt": "node decrypt.js"
+    },
+    "repository": "https://github.com/zhoushoujian/RSA-encrypt",
+    "license": "MIT"
+}

