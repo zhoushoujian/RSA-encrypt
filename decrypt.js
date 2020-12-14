@@ -119,9 +119,9 @@ function getTime() {
 		second = "0" + second
 	}
 	if (mileSecond < 10) {
-		second = "00" + mileSecond
+		mileSecond = "00" + mileSecond
 	} else if (mileSecond < 100) {
-		second = "0" + mileSecond
+		mileSecond = "0" + mileSecond
 	}
 	time = `${year}-${month}-${day} ${hour}:${minute}:${second}.${mileSecond}`;
 	return time;

