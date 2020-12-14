@@ -1,6 +1,7 @@
 {
     "name": "RSA-encrypt",
     "version": "1.0.0",
+    "description": "基于nodejs的rsa加密实践",
     "main": "main.bat",
     "scripts": {
         "encrypt": "node encrypt.js",
